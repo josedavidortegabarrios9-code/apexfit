@@ -54,4 +54,21 @@ public class UsuarioController {
         usuarioService.deleteUsuario(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/perfil")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UsuarioDto> getPerfil(org.springframework.security.core.Authentication authentication) {
+        String correo = authentication.getName();
+        return ResponseEntity.ok(usuarioService.getUsuarioByCorreo(correo));
+    }
+
+    @PutMapping("/cambiar-password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<java.util.Map<String, String>> cambiarPassword(
+            @Valid @RequestBody com.apexfit.backend.dto.ChangePasswordDto request,
+            org.springframework.security.core.Authentication authentication) {
+        String correo = authentication.getName();
+        usuarioService.changePassword(correo, request.getContrasenaActual(), request.getNuevaContrasena());
+        return ResponseEntity.ok(java.util.Map.of("mensaje", "Contraseña actualizada exitosamente."));
+    }
 }

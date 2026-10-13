@@ -76,6 +76,17 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void changePassword(String correo, String contrasenaActual, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + correo));
+        if (!passwordEncoder.matches(contrasenaActual, usuario.getContrasenaHash())) {
+            throw new IllegalArgumentException("La contraseña actual es incorrecta");
+        }
+        usuario.setContrasenaHash(passwordEncoder.encode(nuevaContrasena));
+        usuarioRepository.save(usuario);
+    }
+
     private UsuarioDto mapToDto(Usuario usuario) {
         UsuarioDto dto = new UsuarioDto();
         dto.setIdUsuario(usuario.getIdUsuario());
