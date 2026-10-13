@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,31 +19,37 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR')")
     public ResponseEntity<Page<UsuarioDto>> getAllUsuarios(Pageable pageable) {
         return ResponseEntity.ok(usuarioService.getAllUsuarios(pageable));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR', 'CLIENTE')")
     public ResponseEntity<UsuarioDto> getUsuarioById(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.getUsuarioById(id));
     }
 
     @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR')")
     public ResponseEntity<UsuarioDto> getUsuarioByCorreo(@RequestParam String correo) {
         return ResponseEntity.ok(usuarioService.getUsuarioByCorreo(correo));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<UsuarioDto> createUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
         return new ResponseEntity<>(usuarioService.createUsuario(usuarioDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR', 'CLIENTE')")
     public ResponseEntity<UsuarioDto> updateUsuario(@PathVariable Integer id, @Valid @RequestBody UsuarioDto usuarioDto) {
         return ResponseEntity.ok(usuarioService.updateUsuario(id, usuarioDto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Integer id) {
         usuarioService.deleteUsuario(id);
         return ResponseEntity.noContent().build();

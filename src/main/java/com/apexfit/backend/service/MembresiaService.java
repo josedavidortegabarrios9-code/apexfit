@@ -8,12 +8,14 @@ import com.apexfit.backend.repository.MembresiaRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MembresiaService {
 
     private final MembresiaRepository membresiaRepository;
@@ -32,6 +34,7 @@ public class MembresiaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Membresía no encontrada con id: " + id)));
     }
 
+    @Transactional
     public MembresiaDto create(MembresiaDto dto) {
         Membresia m = new Membresia();
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
@@ -45,6 +48,7 @@ public class MembresiaService {
         return toDto(membresiaRepository.save(m));
     }
 
+    @Transactional
     public MembresiaDto update(Integer id, MembresiaDto dto) {
         Membresia m = membresiaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Membresía no encontrada con id: " + id));
@@ -56,6 +60,7 @@ public class MembresiaService {
         return toDto(membresiaRepository.save(m));
     }
 
+    @Transactional
     public void delete(Integer id) {
         if (!membresiaRepository.existsById(id))
             throw new ResourceNotFoundException("Membresía no encontrada con id: " + id);

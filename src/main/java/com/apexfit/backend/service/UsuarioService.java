@@ -5,17 +5,22 @@ import com.apexfit.backend.entity.Rol;
 import com.apexfit.backend.entity.Usuario;
 import com.apexfit.backend.repository.RolRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
+import com.apexfit.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Page<UsuarioDto> getAllUsuarios(Pageable pageable) {
         return usuarioRepository.findAll(pageable).map(this::mapToDto);
@@ -23,32 +28,34 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
         return mapToDto(usuario);
     }
 
     public UsuarioDto getUsuarioByCorreo(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con correo: " + correo));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + correo));
         return mapToDto(usuario);
     }
 
+    @Transactional
     public UsuarioDto createUsuario(UsuarioDto dto) {
         if (usuarioRepository.findByCorreo(dto.getCorreo()).isPresent()) {
             throw new RuntimeException("El correo ya está en uso");
         }
         Usuario usuario = new Usuario();
         mapToEntity(dto, usuario);
-        // For MVP, just putting a dummy hash if not handling security yet
-        usuario.setContrasenaHash("dummy_hash_for_now");
+        // Default encoded password for users created via Admin endpoint
+        usuario.setContrasenaHash(passwordEncoder.encode("123456"));
         
         Usuario savedUsuario = usuarioRepository.save(usuario);
         return mapToDto(savedUsuario);
     }
 
+    @Transactional
     public UsuarioDto updateUsuario(Integer id, UsuarioDto dto) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
                 
         if (!usuario.getCorreo().equals(dto.getCorreo()) && 
             usuarioRepository.findByCorreo(dto.getCorreo()).isPresent()) {
@@ -60,9 +67,10 @@ public class UsuarioService {
         return mapToDto(updatedUsuario);
     }
 
+    @Transactional
     public void deleteUsuario(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
         // Soft delete
         usuario.setEstado("inactivo");
         usuarioRepository.save(usuario);
@@ -93,7 +101,7 @@ public class UsuarioService {
         }
 
         Rol rol = rolRepository.findById(dto.getIdRol())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id: " + dto.getIdRol()));
         usuario.setRol(rol);
     }
 }

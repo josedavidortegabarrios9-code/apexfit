@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,31 +19,37 @@ public class AsistenciaController {
     private final AsistenciaService asistenciaService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<List<AsistenciaDto>> getAll() {
         return ResponseEntity.ok(asistenciaService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
     public ResponseEntity<AsistenciaDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(asistenciaService.getById(id));
     }
 
     @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
     public ResponseEntity<List<AsistenciaDto>> getByUsuario(@PathVariable Integer idUsuario) {
         return ResponseEntity.ok(asistenciaService.getByUsuario(idUsuario));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
     public ResponseEntity<AsistenciaDto> create(@Valid @RequestBody AsistenciaDto dto) {
         return new ResponseEntity<>(asistenciaService.create(dto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<AsistenciaDto> update(@PathVariable Long id, @Valid @RequestBody AsistenciaDto dto) {
         return ResponseEntity.ok(asistenciaService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         asistenciaService.delete(id);
         return ResponseEntity.noContent().build();

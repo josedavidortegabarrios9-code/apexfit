@@ -10,12 +10,14 @@ import com.apexfit.backend.repository.ProgresoRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProgresoService {
 
     private final ProgresoRepository repo;
@@ -34,6 +36,7 @@ public class ProgresoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Progreso no encontrado con id: " + id)));
     }
 
+    @Transactional
     public ProgresoDto create(ProgresoDto dto) {
         Progreso p = new Progreso();
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
@@ -59,6 +62,7 @@ public class ProgresoService {
         return toDto(saved);
     }
 
+    @Transactional
     public ProgresoDto update(Integer id, ProgresoDto dto) {
         Progreso p = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Progreso no encontrado con id: " + id));
@@ -69,6 +73,7 @@ public class ProgresoService {
         return toDto(repo.save(p));
     }
 
+    @Transactional
     public void delete(Integer id) {
         if (!repo.existsById(id))
             throw new ResourceNotFoundException("Progreso no encontrado con id: " + id);

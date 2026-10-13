@@ -10,12 +10,14 @@ import com.apexfit.backend.repository.RutinaEjercicioRepository;
 import com.apexfit.backend.repository.RutinaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RutinaEjercicioService {
 
     private final RutinaEjercicioRepository repo;
@@ -35,6 +37,7 @@ public class RutinaEjercicioService {
                 .orElseThrow(() -> new ResourceNotFoundException("RutinaEjercicio no encontrado con id: " + id)));
     }
 
+    @Transactional
     public RutinaEjercicioDto create(RutinaEjercicioDto dto) {
         RutinaEjercicio re = new RutinaEjercicio();
         Rutina rutina = rutinaRepository.findById(dto.getIdRutina())
@@ -50,6 +53,7 @@ public class RutinaEjercicioService {
         return toDto(repo.save(re));
     }
 
+    @Transactional
     public RutinaEjercicioDto update(Integer id, RutinaEjercicioDto dto) {
         RutinaEjercicio re = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RutinaEjercicio no encontrado con id: " + id));
@@ -60,6 +64,7 @@ public class RutinaEjercicioService {
         return toDto(repo.save(re));
     }
 
+    @Transactional
     public void delete(Integer id) {
         if (!repo.existsById(id))
             throw new ResourceNotFoundException("RutinaEjercicio no encontrado con id: " + id);

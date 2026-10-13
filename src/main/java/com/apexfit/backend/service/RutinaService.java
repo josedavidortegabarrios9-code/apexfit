@@ -5,13 +5,16 @@ import com.apexfit.backend.entity.Rutina;
 import com.apexfit.backend.entity.Usuario;
 import com.apexfit.backend.repository.RutinaRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
+import com.apexfit.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RutinaService {
 
     private final RutinaRepository rutinaRepository;
@@ -27,10 +30,11 @@ public class RutinaService {
 
     public RutinaDto getRutinaById(Integer id) {
         Rutina rutina = rutinaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rutina no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rutina no encontrada con id: " + id));
         return mapToDto(rutina);
     }
 
+    @Transactional
     public RutinaDto createRutina(RutinaDto dto) {
         Rutina rutina = new Rutina();
         mapToEntity(dto, rutina);
@@ -38,18 +42,20 @@ public class RutinaService {
         return mapToDto(savedRutina);
     }
 
+    @Transactional
     public RutinaDto updateRutina(Integer id, RutinaDto dto) {
         Rutina rutina = rutinaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rutina no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rutina no encontrada con id: " + id));
 
         mapToEntity(dto, rutina);
         Rutina updatedRutina = rutinaRepository.save(rutina);
         return mapToDto(updatedRutina);
     }
 
+    @Transactional
     public void deleteRutina(Integer id) {
         Rutina rutina = rutinaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rutina no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rutina no encontrada con id: " + id));
         rutina.setEstado("inactiva");
         rutinaRepository.save(rutina);
     }
@@ -75,11 +81,11 @@ public class RutinaService {
         }
 
         Usuario entrenador = usuarioRepository.findById(dto.getIdEntrenador())
-                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Entrenador no encontrado con id: " + dto.getIdEntrenador()));
         rutina.setEntrenador(entrenador);
 
         Usuario cliente = usuarioRepository.findById(dto.getIdCliente())
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + dto.getIdCliente()));
         rutina.setCliente(cliente);
     }
 }

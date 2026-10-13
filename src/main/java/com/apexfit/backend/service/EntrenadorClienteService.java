@@ -8,12 +8,14 @@ import com.apexfit.backend.repository.EntrenadorClienteRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EntrenadorClienteService {
 
     private final EntrenadorClienteRepository repo;
@@ -36,6 +38,7 @@ public class EntrenadorClienteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Asignación no encontrada con id: " + id)));
     }
 
+    @Transactional
     public EntrenadorClienteDto create(EntrenadorClienteDto dto) {
         EntrenadorCliente ec = new EntrenadorCliente();
         Usuario entrenador = usuarioRepository.findById(dto.getIdEntrenador())
@@ -48,6 +51,7 @@ public class EntrenadorClienteService {
         return toDto(repo.save(ec));
     }
 
+    @Transactional
     public EntrenadorClienteDto update(Integer id, EntrenadorClienteDto dto) {
         EntrenadorCliente ec = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asignación no encontrada con id: " + id));
@@ -55,6 +59,7 @@ public class EntrenadorClienteService {
         return toDto(repo.save(ec));
     }
 
+    @Transactional
     public void delete(Integer id) {
         if (!repo.existsById(id))
             throw new ResourceNotFoundException("Asignación no encontrada con id: " + id);

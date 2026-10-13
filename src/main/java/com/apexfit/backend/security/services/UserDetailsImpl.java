@@ -20,13 +20,15 @@ public class UserDetailsImpl implements UserDetails {
     private String contrasena;
 
     private Collection<? extends GrantedAuthority> authorities;
+    private boolean enabled;
 
     public UserDetailsImpl(Integer idUsuario, String correo, String contrasena,
-                           Collection<? extends GrantedAuthority> authorities) {
+                           Collection<? extends GrantedAuthority> authorities, boolean enabled) {
         this.idUsuario = idUsuario;
         this.correo = correo;
         this.contrasena = contrasena;
         this.authorities = authorities;
+        this.enabled = enabled;
     }
 
     public static UserDetailsImpl build(Usuario usuario) {
@@ -34,11 +36,14 @@ public class UserDetailsImpl implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().toUpperCase())
         );
 
+        boolean isActivo = usuario.getEstado() == null || "activo".equalsIgnoreCase(usuario.getEstado());
+
         return new UserDetailsImpl(
                 usuario.getIdUsuario(),
                 usuario.getCorreo(),
                 usuario.getContrasenaHash(),
-                authorities);
+                authorities,
+                isActivo);
     }
 
     public Integer getIdUsuario() {
@@ -77,7 +82,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true; // Podríamos verificar if usuario.getEstado().equals("activo")
+        return enabled;
     }
 
     @Override

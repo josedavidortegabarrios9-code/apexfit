@@ -8,12 +8,14 @@ import com.apexfit.backend.repository.AsistenciaRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AsistenciaService {
 
     private final AsistenciaRepository repo;
@@ -32,6 +34,7 @@ public class AsistenciaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada con id: " + id)));
     }
 
+    @Transactional
     public AsistenciaDto create(AsistenciaDto dto) {
         Asistencia a = new Asistencia();
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
@@ -44,6 +47,7 @@ public class AsistenciaService {
         return toDto(repo.save(a));
     }
 
+    @Transactional
     public AsistenciaDto update(Long id, AsistenciaDto dto) {
         Asistencia a = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada con id: " + id));
@@ -52,6 +56,7 @@ public class AsistenciaService {
         return toDto(repo.save(a));
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!repo.existsById(id))
             throw new ResourceNotFoundException("Asistencia no encontrada con id: " + id);

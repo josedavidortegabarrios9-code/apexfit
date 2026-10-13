@@ -3,36 +3,33 @@ package com.apexfit.backend.service;
 import com.apexfit.backend.dto.EjercicioDto;
 import com.apexfit.backend.entity.Ejercicio;
 import com.apexfit.backend.repository.EjercicioRepository;
+import com.apexfit.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EjercicioService {
 
     private final EjercicioRepository ejercicioRepository;
 
-    
-
     public Page<EjercicioDto> getAllEjercicios(Pageable pageable) {
         return ejercicioRepository.findAll(pageable).map(this::mapToDto);
     } 
-    
-    
 
     public EjercicioDto getEjercicioById(Integer id) {
         Ejercicio ejercicio = ejercicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ejercicio no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ejercicio no encontrado con id: " + id));
         return mapToDto(ejercicio);
     }
-    
 
-    
-
+    @Transactional
     public EjercicioDto createEjercicio(EjercicioDto dto) {
         if (ejercicioRepository.findByNombre(dto.getNombre()).isPresent()) {
             throw new RuntimeException("El nombre del ejercicio ya existe");
@@ -43,9 +40,10 @@ public class EjercicioService {
         return mapToDto(savedEjercicio);
     }
 
+    @Transactional
     public EjercicioDto updateEjercicio(Integer id, EjercicioDto dto) {
         Ejercicio ejercicio = ejercicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ejercicio no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ejercicio no encontrado con id: " + id));
 
         if (!ejercicio.getNombre().equals(dto.getNombre()) && 
             ejercicioRepository.findByNombre(dto.getNombre()).isPresent()) {
@@ -57,9 +55,10 @@ public class EjercicioService {
         return mapToDto(updatedEjercicio);
     }
 
+    @Transactional
     public void deleteEjercicio(Integer id) {
         Ejercicio ejercicio = ejercicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ejercicio no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ejercicio no encontrado con id: " + id));
         ejercicioRepository.delete(ejercicio);
     }
 
