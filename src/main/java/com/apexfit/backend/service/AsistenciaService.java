@@ -40,10 +40,39 @@ public class AsistenciaService {
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + dto.getIdUsuario()));
         a.setUsuario(usuario);
-        a.setFecha(dto.getFecha());
-        a.setHoraEntrada(dto.getHoraEntrada());
+        a.setFecha(dto.getFecha() != null ? dto.getFecha() : java.time.LocalDate.now());
+        a.setHoraEntrada(dto.getHoraEntrada() != null ? dto.getHoraEntrada() : java.time.LocalTime.now());
         a.setHoraSalida(dto.getHoraSalida());
-        a.setMetodoRegistro(dto.getMetodoRegistro());
+        a.setMetodoRegistro(dto.getMetodoRegistro() != null ? dto.getMetodoRegistro() : "QR");
+        return toDto(repo.save(a));
+    }
+
+    @Transactional
+    public AsistenciaDto registrarPorQr(String qrData) {
+        // Formato esperado: "APEXFIT-USER-{id}-{correo}" o simplemente "{id}"
+        Integer idUsuario;
+        if (qrData.startsWith("APEXFIT-USER-")) {
+            String[] parts = qrData.split("-");
+            idUsuario = Integer.parseInt(parts[2]);
+        } else {
+            try {
+                idUsuario = Integer.parseInt(qrData.trim());
+            } catch (NumberFormatException e) {
+                Usuario u = usuarioRepository.findByCorreo(qrData.trim())
+                        .orElseThrow(() -> new ResourceNotFoundException("Código QR inválido o usuario no encontrado"));
+                idUsuario = u.getIdUsuario();
+            }
+        }
+
+        final Integer finalUserId = idUsuario;
+        Usuario usuario = usuarioRepository.findById(finalUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + finalUserId + " no encontrado"));
+
+        Asistencia a = new Asistencia();
+        a.setUsuario(usuario);
+        a.setFecha(java.time.LocalDate.now());
+        a.setHoraEntrada(java.time.LocalTime.now());
+        a.setMetodoRegistro("QR");
         return toDto(repo.save(a));
     }
 

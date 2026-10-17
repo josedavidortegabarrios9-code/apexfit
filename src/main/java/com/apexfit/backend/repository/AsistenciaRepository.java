@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
     List<Asistencia> findByUsuario_IdUsuario(Integer idUsuario);
+    long countByFecha(java.time.LocalDate fecha);
 }

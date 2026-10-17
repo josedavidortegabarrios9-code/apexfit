@@ -54,4 +54,10 @@ public class AsistenciaController {
         asistenciaService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/escanear-qr")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR', 'CLIENTE')")
+    public ResponseEntity<AsistenciaDto> registrarPorQr(@Valid @RequestBody com.apexfit.backend.dto.EscanearQrRequest request) {
+        return new ResponseEntity<>(asistenciaService.registrarPorQr(request.getQrData()), HttpStatus.CREATED);
+    }
 }

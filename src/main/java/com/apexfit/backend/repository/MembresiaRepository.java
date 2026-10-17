@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface MembresiaRepository extends JpaRepository<Membresia, Integer> {
     List<Membresia> findByUsuario_IdUsuario(Integer idUsuario);
+    long countByEstado(String estado);
 }
