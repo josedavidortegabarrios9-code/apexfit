@@ -25,13 +25,13 @@ public class AsistenciaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ENTRENADOR', 'ADMINISTRADOR')")
     public ResponseEntity<AsistenciaDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(asistenciaService.getById(id));
     }
 
     @GetMapping("/usuario/{idUsuario}")
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ENTRENADOR', 'ADMINISTRADOR')")
     public ResponseEntity<List<AsistenciaDto>> getByUsuario(@PathVariable Integer idUsuario) {
         return ResponseEntity.ok(asistenciaService.getByUsuario(idUsuario));
     }
