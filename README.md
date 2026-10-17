@@ -28,14 +28,25 @@ Ejecuta en la terminal (estando dentro de la carpeta `backend`):
 ./mvnw spring-boot:run
 ```
 
-## Pruebas (Swagger y Postman)
-Una vez iniciado el proyecto, puedes probar los endpoints (GET, POST, PUT, DELETE) desde la interfaz gráfica de Swagger:
-**http://localhost:8080/swagger-ui.html**
+## Documentación de la API (Endpoints, Seguridad RBAC y Postman)
+El proyecto cuenta con documentación detallada de todos los endpoints, esquemas de petición y respuestas:
+- 📖 **Documentación de la API (Markdown):** Ver [`DOCUMENTACION_API.md`](../../DOCUMENTACION_API.md) en la raíz del repositorio.
+- 🔐 **Arquitectura de Seguridad:** Ver [`ARQUITECTURA_SEGURIDAD.md`](../../postman/documents/ARQUITECTURA_SEGURIDAD.md).
+- 🧪 **Reporte de Tests Automatizados Postman:** Ver [`REPORTE_TESTS_POSTMAN.md`](../../postman/documents/REPORTE_TESTS_POSTMAN.md).
+- 📬 **Colección Postman JSON:** Ubicada en [`postman/collections/ApexFit_JWT_Security.postman_collection.json`](../../postman/collections/ApexFit_JWT_Security.postman_collection.json) con **47 tests automatizados** y variables de entorno configuradas.
 
-Endpoints implementados (con paginación y validaciones):
-- `/api/v1/usuarios`
-- `/api/v1/ejercicios`
-- `/api/v1/rutinas`
+### Módulos y Controladores Disponibles (11 controladores):
+- `POST /api/v1/auth/login`, `POST /api/v1/auth/register` (Autenticación JWT)
+- `/api/v1/usuarios` (CRUD, búsqueda por correo, `/perfil`, `/cambiar-password`)
+- `/api/v1/ejercicios` (CRUD, filtros por grupo muscular y dificultad)
+- `/api/v1/rutinas` (CRUD, rutinas por cliente)
+- `/api/v1/rutina-ejercicios` (Asociación series/repeticiones)
+- `/api/v1/progresos` (Métricas físicas, peso, altura, IMC)
+- `/api/v1/progresos-medidas` (Medidas corporales individuales)
+- `/api/v1/membresias` (CRUD y estado de suscripción)
+- `/api/v1/asistencias` (Registro con QR y auditoría)
+- `/api/v1/alertas` (Alertas preventivas y notificaciones)
+- `/api/v1/entrenador-cliente` (Vinculación asesor-cliente)
 
 ## Despliegue con AWS RDS (Perfil Producción)
 Para conectarte a la base de datos de AWS, debes iniciar la aplicación con el perfil `prod` y configurar las variables de entorno de AWS RDS.
