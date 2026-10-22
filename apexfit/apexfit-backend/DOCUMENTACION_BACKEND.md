@@ -312,6 +312,27 @@ Calcula en una sola llamada agregada (`GET /api/v1/dashboard/resumen`):
 - **`MembresiaService`:** Gestiona tipos de suscripción, fechas de vigencia y montos cobrados.
 - **`AlertaService`:** Canal de comunicación para advertir sobre clientes inactivos (riesgo de deserción) o membresías próximas a expirar.
 
+### 6.8. Módulo de Sesiones de Entrenamiento (`SesionEntrenamientoController` y `SesionEntrenamientoService`)
+Registra el **avance diario** de cada cliente ejercicio por ejercicio. Es complementario a `rutina_ejercicio` (que define el plan) y a `progreso` (que mide peso/medidas).
+
+- **Tablas nuevas (Flyway V3):**
+  - `sesion_entrenamiento`: `id_sesion`, `id_usuario`, `id_rutina`, `fecha`, `terminada`. Restricción `UNIQUE(id_usuario, fecha)` — un solo registro por día.
+  - `sesion_ejercicio`: `id_sesion_ejercicio`, `id_sesion`, `id_rutina_ejercicio`, `estado ENUM('completado','aplazado','pendiente')`, `completado_en DATETIME`. Restricción `UNIQUE(id_sesion, id_rutina_ejercicio)`.
+
+- **Lógica de Upsert (`PUT /hoy`):** Si ya existe una sesión para el usuario + fecha de hoy, se actualiza con los nuevos estados; si no existe, se crea. El `CascadeType.ALL` con `orphanRemoval` en la colección de ejercicios garantiza la sincronización automática.
+
+- **Validaciones del servicio:**
+  1. La rutina debe existir y pertenecer al cliente autenticado (→ `403` si no).
+  2. Cada `idRutinaEjercicio` debe pertenecer a la rutina indicada (→ `400` si no).
+  3. El `estado` debe ser uno de: `completado`, `aplazado`, `pendiente` (→ `400` si no).
+
+- **Control de acceso en historial (`GET /usuario/{id}`):**
+  - `CLIENTE`: Solo puede consultar su propio historial.
+  - `ENTRENADOR`: Solo puede ver historial de sus clientes asignados (verificado contra tabla `entrenador_cliente`).
+  - `ADMINISTRADOR`: Acceso total.
+
+- **El ID del usuario siempre se extrae del token JWT** (`UserDetailsImpl.getIdUsuario()`), nunca del cuerpo de la petición; mismo patrón que `/usuarios/perfil`.
+
 ---
 
 ## 7. Manejo Centralizado de Excepciones y Validaciones

@@ -33,12 +33,13 @@ El proyecto cuenta con documentación detallada de todos los endpoints, esquemas
 - 📘 **Explicación Completa del Backend:** Ver [`DOCUMENTACION_BACKEND.md`](DOCUMENTACION_BACKEND.md) para el desglose detallado de arquitectura, servicios, lógica de negocio y base de datos.
 - 📖 **Documentación de la API (Markdown):** Ver [`DOCUMENTACION_API.md`](DOCUMENTACION_API.md).
 
-### Módulos y Controladores Disponibles (11 controladores):
+### Módulos y Controladores Disponibles (12 controladores):
 - `POST /api/v1/auth/login`, `POST /api/v1/auth/register` (Autenticación JWT)
 - `/api/v1/usuarios` (CRUD, búsqueda por correo, `/perfil`, `/cambiar-password`)
 - `/api/v1/ejercicios` (CRUD, filtros por grupo muscular y dificultad)
 - `/api/v1/rutinas` (CRUD, rutinas por cliente)
 - `/api/v1/rutina-ejercicios` (Asociación series/repeticiones)
+- `/api/v1/sesiones-entrenamiento` (Avance diario, upsert de hoy, historial por cliente)
 - `/api/v1/progresos` (Métricas físicas, peso, altura, IMC)
 - `/api/v1/progresos-medidas` (Medidas corporales individuales)
 - `/api/v1/membresias` (CRUD y estado de suscripción)
