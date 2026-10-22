@@ -1,0 +1,10 @@
+@use '../usuarios/usuarios' as *;
+
+.config {
+  display: grid;
+  gap: 8px;
+
+  input {
+    max-width: 140px;
+  }
+}
