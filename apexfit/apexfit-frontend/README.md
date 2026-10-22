@@ -50,6 +50,32 @@ El resultado queda en `dist/<proyecto>/browser`.
 
 Las apps hablan con la API REST de [apexfit-backend](https://github.com/josedavidortegabarrios9-code/apexfit-backend.git) (Spring Boot + JWT, MySQL en AWS RDS). En desarrollo, `proxy.conf.json` redirige `/api` a `http://localhost:8080`, y las apps usan la ruta `/api/v1`. Para levantar el backend, sigue el README de ese repositorio.
 
+## Usuarios de prueba
+
+Cuentas para probar los tres roles. Son solo para desarrollo y pruebas.
+
+**Cuentas de prueba (contraseña `Prueba123`)**
+
+| Rol | Correo |
+| --- | --- |
+| Administrador | `administrador@apexfit.test` |
+| Entrenador | `entrenador@apexfit.test` |
+| Cliente | `cliente@apexfit.test` |
+
+**Cuentas del backend**
+
+| Rol | Correo | Contraseña |
+| --- | --- | --- |
+| Administrador | `admin@apexfit.com` | `admin123` |
+| Entrenador | `pedro.entrenador@apexfit.com` | `entrenador123` |
+| Cliente | `carlos@apexfit.com` | `12345` |
+
+**Código QR de ejemplo** (para pegarlo en Asistencia como administrador):
+
+```
+APEXFIT-USER-9-cliente@apexfit.test
+```
+
 ## Integración continua
 
 El workflow `.github/workflows/frontend-ci-cd.yml` instala, corre las pruebas de los tres proyectos y compila las dos apps en cada push y pull request. El despliegue a AWS está preparado pero desactivado, a la espera de la infraestructura.
