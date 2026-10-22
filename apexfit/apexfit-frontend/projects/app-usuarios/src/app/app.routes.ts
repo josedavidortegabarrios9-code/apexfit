@@ -35,6 +35,11 @@ export const routes: Routes = [
         title: 'Hoy · ApexFit',
       },
       {
+        path: 'entrenar',
+        loadComponent: () => import('./pages/entrenar/entrenar').then((m) => m.Entrenar),
+        title: 'Rutina de hoy · ApexFit',
+      },
+      {
         path: 'rutina',
         loadComponent: () => import('./pages/rutina/rutina').then((m) => m.Rutina),
         title: 'Rutina · ApexFit',

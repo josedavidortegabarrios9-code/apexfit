@@ -48,6 +48,7 @@ export function armarRutina(
       series: item.series,
       repeticiones: item.repeticiones,
       descansoSeg: item.descansoSeg ?? null,
+      ...(ejercicio?.videoUrl ? { videoUrl: ejercicio.videoUrl } : {}),
     };
     const dia = normalizarDia(item.diaSemana);
     porDia.set(dia, [...(porDia.get(dia) ?? []), fila]);

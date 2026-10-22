@@ -30,6 +30,9 @@
       {{ p.dia.ejercicios.length }}
       {{ p.dia.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios' }} · {{ p.rutina }}
     </p>
+    @if (p.dia.ejercicios.length > 0) {
+      <a class="iniciar" routerLink="/entrenar">Iniciar rutina de hoy</a>
+    }
   } @else if (p?.tipo === 'descanso') {
     <small>Hoy</small>
     <h2>Día de descanso</h2>

@@ -47,6 +47,8 @@ export interface EjercicioRutina {
   series: number;
   repeticiones: number;
   descansoSeg: number | null;
+  /** Enlace al video del ejercicio, si el catálogo lo tiene. */
+  videoUrl?: string;
 }
 
 export interface DiaRutina {
