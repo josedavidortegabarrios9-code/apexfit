@@ -28,13 +28,10 @@ Ejecuta en la terminal (estando dentro de la carpeta `backend`):
 ./mvnw spring-boot:run
 ```
 
-## Documentación de la API (Endpoints, Seguridad RBAC y Postman)
+## Documentación de la API (Endpoints y Seguridad RBAC)
 El proyecto cuenta con documentación detallada de todos los endpoints, esquemas de petición y respuestas:
 - 📘 **Explicación Completa del Backend:** Ver [`DOCUMENTACION_BACKEND.md`](DOCUMENTACION_BACKEND.md) para el desglose detallado de arquitectura, servicios, lógica de negocio y base de datos.
 - 📖 **Documentación de la API (Markdown):** Ver [`DOCUMENTACION_API.md`](DOCUMENTACION_API.md).
-- 🔐 **Arquitectura de Seguridad:** Ver [`ARQUITECTURA_SEGURIDAD.md`](../../postman/documents/ARQUITECTURA_SEGURIDAD.md).
-- 🧪 **Reporte de Tests Automatizados Postman:** Ver [`REPORTE_TESTS_POSTMAN.md`](../../postman/documents/REPORTE_TESTS_POSTMAN.md).
-- 📬 **Colección Postman JSON:** Ubicada en [`postman/collections/ApexFit_JWT_Security.postman_collection.json`](../../postman/collections/ApexFit_JWT_Security.postman_collection.json) con **47 tests automatizados** y variables de entorno configuradas.
 
 ### Módulos y Controladores Disponibles (11 controladores):
 - `POST /api/v1/auth/login`, `POST /api/v1/auth/register` (Autenticación JWT)
