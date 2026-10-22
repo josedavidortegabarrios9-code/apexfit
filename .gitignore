@@ -1,6 +1,3 @@
-# Ignorar todo el contenido del frontend excepto el README descriptivo
-apexfit/apexfit-frontend/*
-!apexfit/apexfit-frontend/README.md
 
 # Archivos de Postman locales y scripts auxiliares
 .postman/
