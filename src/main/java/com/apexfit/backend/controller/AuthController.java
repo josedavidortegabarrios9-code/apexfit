@@ -24,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.apexfit.backend.dto.auth.RecuperarPasswordRequest;
+import com.apexfit.backend.dto.auth.ResetearPasswordRequest;
+import org.springframework.http.HttpStatus;
+import java.util.Optional;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -89,5 +94,51 @@ public class AuthController {
         usuarioRepository.save(usuario);
 
         return ResponseEntity.ok(Map.of("mensaje", "Usuario registrado exitosamente."));
+    }
+
+    // ─── SOLICITAR RECUPERACIÓN DE CONTRASEÑA ──────────────────────────────
+    @PostMapping("/solicitar-recuperacion")
+    public ResponseEntity<?> solicitarRecuperacion(@Valid @RequestBody RecuperarPasswordRequest request) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(request.getCorreo());
+
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", "No existe ningún usuario registrado con el correo proporcionado."));
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        if ("inactivo".equalsIgnoreCase(usuario.getEstado())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("mensaje", "La cuenta se encuentra inactiva. Contacte al administrador."));
+        }
+
+        String tokenRecuperacion = jwtUtils.generatePasswordResetToken(usuario.getCorreo());
+
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Token de recuperación generado exitosamente. Válido por 15 minutos.",
+                "correo", usuario.getCorreo(),
+                "tokenRecuperacion", tokenRecuperacion,
+                "expiraEnMinutos", 15
+        ));
+    }
+
+    // ─── RESETEAR CONTRASEÑA ───────────────────────────────────────────────
+    @PostMapping("/resetear-password")
+    public ResponseEntity<?> resetearPassword(@Valid @RequestBody ResetearPasswordRequest request) {
+        if (!jwtUtils.validatePasswordResetToken(request.getToken())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "El token de recuperación es inválido o ha expirado."));
+        }
+
+        String correo = jwtUtils.getCorreoFromResetToken(request.getToken());
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con correo: " + correo));
+
+        usuario.setContrasenaHash(encoder.encode(request.getNuevaContrasena()));
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Contraseña restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña."
+        ));
     }
 }

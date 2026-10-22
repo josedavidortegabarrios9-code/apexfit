@@ -19,7 +19,7 @@ public class MembresiaController {
     private final MembresiaService membresiaService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR')")
     public ResponseEntity<List<MembresiaDto>> getAll() {
         return ResponseEntity.ok(membresiaService.getAll());
     }
@@ -37,7 +37,7 @@ public class MembresiaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR')")
     public ResponseEntity<MembresiaDto> create(@Valid @RequestBody MembresiaDto dto) {
         return new ResponseEntity<>(membresiaService.create(dto), HttpStatus.CREATED);
     }

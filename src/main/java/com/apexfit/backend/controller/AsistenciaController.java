@@ -19,7 +19,7 @@ public class AsistenciaController {
     private final AsistenciaService asistenciaService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ENTRENADOR')")
     public ResponseEntity<List<AsistenciaDto>> getAll() {
         return ResponseEntity.ok(asistenciaService.getAll());
     }
