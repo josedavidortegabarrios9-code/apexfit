@@ -146,9 +146,10 @@ Para probar los diferentes roles y flujos del sistema:
 |---|---|---|---|
 | **Administrador** | `admin@apexfit.com` | `admin123` | `http://localhost:4201` |
 | **Entrenador** | `pedro.entrenador@apexfit.com` | `entrenador123` | `http://localhost:4201` |
+| **Cliente** | `cliente@apexfit.test` | `Prueba123` | `http://localhost:4200` |
 | **Cliente** | `carlos@apexfit.com` | `12345` | `http://localhost:4200` |
 
-*Nota: También existen cuentas mock en base de pruebas: `administrador@apexfit.test`, `entrenador@apexfit.test`, `cliente@apexfit.test` con clave `Prueba123`.*
+*Nota: También existen cuentas mock en base de pruebas: `administrador@apexfit.test`, `entrenador@apexfit.test`,  con clave `Prueba123`.*
 
 ---
 
