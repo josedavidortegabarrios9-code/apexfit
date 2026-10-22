@@ -197,6 +197,75 @@ Content-Type: application/json
 
 ---
 
+### 💪 3.12. Sesiones de Entrenamiento (`/api/v1/sesiones-entrenamiento`)
+
+Módulo de seguimiento del avance diario de entrenamiento. Permite al cliente registrar qué ejercicios completó, aplazó o dejó pendiente de su rutina asignada. El ID del usuario se obtiene automáticamente del token JWT, nunca del cuerpo de la petición.
+
+| Método | Endpoint | Roles Permitidos | Descripción |
+|---|---|---|---|
+| `PUT` | `/api/v1/sesiones-entrenamiento/hoy` | `CLIENTE` | Guardar (upsert) el avance del día del cliente autenticado |
+| `GET` | `/api/v1/sesiones-entrenamiento/hoy` | `CLIENTE` | Consultar el avance de hoy (para retomarlo en otro dispositivo) |
+| `GET` | `/api/v1/sesiones-entrenamiento/usuario/{idCliente}?desde=&hasta=` | `CLIENTE`, `ENTRENADOR`, `ADMINISTRADOR` | Historial de sesiones en un rango de fechas |
+
+#### Reglas de negocio:
+- **Upsert:** Si ya existe una sesión para el usuario en la fecha actual, se actualiza; si no, se crea una nueva. Restricción `UNIQUE(id_usuario, fecha)`.
+- **Validación de pertenencia:** Un `idRutinaEjercicio` que no pertenezca a la rutina indicada genera error `400 Bad Request`. Si la rutina no pertenece al cliente autenticado, se retorna `403 Forbidden`.
+- **Historial con RBAC:** Un `CLIENTE` solo puede consultar su propio historial. Un `ENTRENADOR` solo puede ver el de sus clientes asignados (vía `entrenador_cliente`). El `ADMINISTRADOR` puede consultar cualquiera.
+
+#### Ejemplo — PUT `/api/v1/sesiones-entrenamiento/hoy` (Guardar avance):
+```json
+// Request
+{
+  "idRutina": 5,
+  "terminada": false,
+  "ejercicios": [
+    { "idRutinaEjercicio": 12, "estado": "completado" },
+    { "idRutinaEjercicio": 13, "estado": "aplazado" },
+    { "idRutinaEjercicio": 14, "estado": "pendiente" }
+  ]
+}
+```
+
+**Respuesta exitosa (`200 OK`):**
+```json
+{
+  "idSesion": 1,
+  "fecha": "2026-10-22",
+  "idRutina": 5,
+  "terminada": false,
+  "ejercicios": [
+    { "idRutinaEjercicio": 12, "estado": "completado" },
+    { "idRutinaEjercicio": 13, "estado": "aplazado" },
+    { "idRutinaEjercicio": 14, "estado": "pendiente" }
+  ]
+}
+```
+
+#### Ejemplo — GET `/api/v1/sesiones-entrenamiento/usuario/9?desde=2026-10-01&hasta=2026-10-22` (Historial):
+**Respuesta exitosa (`200 OK`):**
+```json
+[
+  {
+    "fecha": "2026-10-22",
+    "idRutina": 5,
+    "terminada": false,
+    "completados": 1,
+    "aplazados": 1,
+    "total": 3
+  },
+  {
+    "fecha": "2026-10-21",
+    "idRutina": 5,
+    "terminada": true,
+    "completados": 3,
+    "aplazados": 0,
+    "total": 3
+  }
+]
+```
+
+---
+
 ## ⚠️ 4. Estructura de Respuestas de Error
 
 Todas las excepciones son gestionadas centralmente por `GlobalExceptionHandler`:

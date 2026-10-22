@@ -45,9 +45,10 @@ Electiva/
 - Gestión y seguimiento del estado de suscripciones (`activa`, `vencida`, `cancelada`).
 - Notificaciones y alertas automáticas de vencimiento.
 
-### 4. Rutinas y Catálogo de Ejercicios
+### 4. Rutinas, Ejercicios y Sesiones de Entrenamiento
 - Catálogo de ejercicios clasificado por grupos musculares y dificultad, con URLs a videos demostrativos.
 - Planificación semanal con series, repeticiones, descansos y notas del entrenador.
+- Registro y seguimiento del avance diario de sesiones de entrenamiento por ejercicio (`completado`, `aplazado`, `pendiente`), sincronizable entre dispositivos.
 
 ### 5. Seguimiento Antropométrico y Progreso
 - Registro periódico de métricas físicas: peso, altura, cálculo automático de IMC.
