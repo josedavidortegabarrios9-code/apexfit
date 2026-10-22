@@ -1,8 +1,8 @@
-# Gitignore en la raíz del repositorio
-# Evitar subir el frontend temporalmente (solo dejar la carpeta lista localmente)
-apexfit/apexfit-frontend/
+# Ignorar todo el contenido del frontend excepto el README descriptivo
+apexfit/apexfit-frontend/*
+!apexfit/apexfit-frontend/README.md
 
-# Archivos de Postman locales y scripts de prueba auxiliares
+# Archivos de Postman locales y scripts auxiliares
 .postman/
 postman/
 run_postman_tests.ps1
