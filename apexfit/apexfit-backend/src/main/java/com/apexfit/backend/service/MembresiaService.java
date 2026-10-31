@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class MembresiaService {
 
     private final MembresiaRepository membresiaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
     public List<MembresiaDto> getAll() {
         return membresiaRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
@@ -45,7 +47,18 @@ public class MembresiaService {
         m.setFechaFin(dto.getFechaFin());
         m.setPrecio(dto.getPrecio());
         if (dto.getEstado() != null) m.setEstado(dto.getEstado());
-        return toDto(membresiaRepository.save(m));
+
+        Membresia saved = membresiaRepository.save(m);
+        notificacionService.crear(
+                saved.getUsuario().getIdUsuario(),
+                "MEMBRESIA_RENOVADA",
+                "Membresía renovada",
+                "Tu membresía " + saved.getTipo() + " ha sido renovada hasta el " + saved.getFechaFin() + ".",
+                saved.getIdMembresia(),
+                LocalDate.now()
+        );
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -57,7 +70,18 @@ public class MembresiaService {
         m.setFechaFin(dto.getFechaFin());
         m.setPrecio(dto.getPrecio());
         if (dto.getEstado() != null) m.setEstado(dto.getEstado());
-        return toDto(membresiaRepository.save(m));
+
+        Membresia saved = membresiaRepository.save(m);
+        notificacionService.crear(
+                saved.getUsuario().getIdUsuario(),
+                "MEMBRESIA_RENOVADA",
+                "Membresía renovada",
+                "Tu membresía " + saved.getTipo() + " ha sido renovada hasta el " + saved.getFechaFin() + ".",
+                saved.getIdMembresia(),
+                LocalDate.now()
+        );
+
+        return toDto(saved);
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { Asistencia } from '../../data/asistencias.models';
 import { AsistenciasService } from '../../data/asistencias.service';
 import { Carga } from '../../data/carga';
+import { ConfiguracionService } from '../../data/configuracion.service';
 import { mensajeDeError } from '../../data/errores';
 import { fechaCompleta, hoyIso } from '../../data/formato';
 import { guardarDias, leerDias, MAX_DIAS, MIN_DIAS, normalizarDias } from '../../data/inactividad.config';
@@ -29,6 +30,7 @@ export class InactividadPagina {
   private readonly asistencias = inject(AsistenciasService);
   private readonly usuarios = inject(UsuariosService);
   private readonly membresias = inject(MembresiasService);
+  private readonly configuracion = inject(ConfiguracionService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly hoy = hoyIso();
@@ -60,11 +62,14 @@ export class InactividadPagina {
       asistencias: this.asistencias.listar(),
       usuarios: this.usuarios.listar(),
       membresias: this.membresias.listar(),
+      dias: this.configuracion.obtenerDiasInactividad(),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ asistencias, usuarios, membresias }) =>
-          this.carga.set({ tipo: 'listo', datos: { asistencias, usuarios: usuarios.usuarios, membresias } }),
+        next: ({ asistencias, usuarios, membresias, dias }) => {
+          this.dias.set(dias);
+          this.carga.set({ tipo: 'listo', datos: { asistencias, usuarios: usuarios.usuarios, membresias } });
+        },
         error: (error: unknown) => this.carga.set({ tipo: 'error', mensaje: mensajeDeError(error, 'la inactividad') }),
       });
   }
@@ -74,5 +79,6 @@ export class InactividadPagina {
     campo.value = String(dias); // si escribió algo inválido, el campo vuelve al valor aceptado
     this.dias.set(dias);
     guardarDias(dias);
+    this.configuracion.guardarDiasInactividad(dias).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 }

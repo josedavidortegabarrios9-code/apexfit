@@ -3,14 +3,16 @@ package com.apexfit.backend.service;
 import com.apexfit.backend.dto.RutinaDto;
 import com.apexfit.backend.entity.Rutina;
 import com.apexfit.backend.entity.Usuario;
+import com.apexfit.backend.exception.ResourceNotFoundException;
 import com.apexfit.backend.repository.RutinaRepository;
 import com.apexfit.backend.repository.UsuarioRepository;
-import com.apexfit.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class RutinaService {
 
     private final RutinaRepository rutinaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
     public Page<RutinaDto> getAllRutinas(Pageable pageable) {
         return rutinaRepository.findAll(pageable).map(this::mapToDto);
@@ -49,6 +52,16 @@ public class RutinaService {
 
         mapToEntity(dto, rutina);
         Rutina updatedRutina = rutinaRepository.save(rutina);
+
+        notificacionService.crear(
+                updatedRutina.getCliente().getIdUsuario(),
+                "RUTINA_ACTUALIZADA",
+                "Rutina actualizada",
+                "Tu rutina '" + updatedRutina.getNombre() + "' ha sido actualizada.",
+                updatedRutina.getIdRutina(),
+                LocalDate.now()
+        );
+
         return mapToDto(updatedRutina);
     }
 

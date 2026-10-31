@@ -7,6 +7,7 @@ import { armarTablero, opcionesParaEntrenador } from '../../data/asignaciones.ma
 import { ClienteDeEntrenador, OpcionesCliente, TABLERO_VACIO } from '../../data/asignaciones.models';
 import { AsignacionesService, DatosAsignaciones } from '../../data/asignaciones.service';
 import { Carga } from '../../data/carga';
+import { ConfiguracionService } from '../../data/configuracion.service';
 import { mensajeDeError, mensajeDeGuardado } from '../../data/errores';
 import { fechaCompleta } from '../../data/formato';
 import { leerDias } from '../../data/inactividad.config';
@@ -31,6 +32,7 @@ export class Asignaciones {
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly inactivosService = inject(InactivosService);
+  private readonly configuracion = inject(ConfiguracionService);
   private inactivosListos = false;
 
   protected readonly fecha = fechaCompleta;
@@ -47,7 +49,10 @@ export class Asignaciones {
   protected readonly busqueda = signal('');
   /** Clientes que la pantalla Inactividad marca hoy (se calcula una vez por visita, con sus mismos días). */
   protected readonly inactivos = signal<ReadonlySet<number>>(new Set());
-  protected readonly diasInactividad = leerDias();
+  protected readonly dias = signal(leerDias());
+  protected get diasInactividad(): number {
+    return this.dias();
+  }
   private readonly botonAsignar = viewChild<ElementRef<HTMLButtonElement>>('botonAsignar');
 
   protected readonly form = this.fb.group({ idCliente: ['', Validators.required] });
@@ -96,6 +101,7 @@ export class Asignaciones {
       this.carga.set({ tipo: 'cargando' });
       this.inactivosListos = false;
     }
+    this.configuracion.obtenerDiasInactividad().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((d) => this.dias.set(d));
     this.servicio
       .listar()
       .pipe(takeUntilDestroyed(this.destroyRef))

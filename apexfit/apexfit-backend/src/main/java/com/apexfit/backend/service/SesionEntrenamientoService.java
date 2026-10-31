@@ -25,6 +25,7 @@ public class SesionEntrenamientoService {
     private final RutinaEjercicioRepository rutinaEjercicioRepo;
     private final UsuarioRepository usuarioRepo;
     private final EntrenadorClienteRepository entrenadorClienteRepo;
+    private final NotificacionService notificacionService;
 
     // ── PUT /hoy ─────────────────────────────────────────────────────────
     @Transactional
@@ -79,6 +80,10 @@ public class SesionEntrenamientoService {
                     return nueva;
                 });
 
+        boolean eraTerminada = Boolean.TRUE.equals(sesion.getTerminada());
+        boolean ahoraTerminada = Boolean.TRUE.equals(request.getTerminada());
+        boolean transicionTerminada = ahoraTerminada && !eraTerminada;
+
         // Actualizar campos de la sesión
         sesion.setRutina(rutina);
         sesion.setTerminada(request.getTerminada());
@@ -113,6 +118,40 @@ public class SesionEntrenamientoService {
         sesion.getEjercicios().addAll(nuevaLista);
 
         SesionEntrenamiento saved = sesionRepo.save(sesion);
+
+        if (transicionTerminada) {
+            long completados = saved.getEjercicios().stream()
+                    .filter(se -> se.getEstado() == SesionEjercicio.EstadoEjercicio.completado)
+                    .count();
+            long aplazados = saved.getEjercicios().stream()
+                    .filter(se -> se.getEstado() == SesionEjercicio.EstadoEjercicio.aplazado)
+                    .count();
+
+            List<EntrenadorCliente> asignaciones = entrenadorClienteRepo.findByCliente_IdUsuarioAndEstadoIgnoreCase(idUsuario, "activa");
+            Set<Integer> idsEntrenadores = asignaciones.stream()
+                    .map(ac -> ac.getEntrenador().getIdUsuario())
+                    .collect(Collectors.toSet());
+
+            if (rutina.getEntrenador() != null) {
+                idsEntrenadores.add(rutina.getEntrenador().getIdUsuario());
+            }
+
+            String nombreCliente = usuario.getNombre() + " " + usuario.getApellido();
+            String mensaje = "El cliente " + nombreCliente + " completó su entrenamiento: "
+                    + completados + " completados, " + aplazados + " aplazados.";
+
+            for (Integer idEntrenador : idsEntrenadores) {
+                notificacionService.crear(
+                        idEntrenador,
+                        "SESION_TERMINADA",
+                        "Sesión finalizada",
+                        mensaje,
+                        saved.getIdSesion().intValue(),
+                        saved.getFecha()
+                );
+            }
+        }
+
         return mapToResponse(saved);
     }
 

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class RutinaEjercicioService {
     private final RutinaEjercicioRepository repo;
     private final RutinaRepository rutinaRepository;
     private final EjercicioRepository ejercicioRepository;
+    private final NotificacionService notificacionService;
 
     public List<RutinaEjercicioDto> getAll() {
         return repo.findAll().stream().map(this::toDto).collect(Collectors.toList());
@@ -50,7 +52,32 @@ public class RutinaEjercicioService {
         re.setSeries(dto.getSeries());
         re.setRepeticiones(dto.getRepeticiones());
         re.setDescansoSeg(dto.getDescansoSeg());
-        return toDto(repo.save(re));
+
+        boolean primerEjercicio = repo.findByRutina_IdRutina(dto.getIdRutina()).isEmpty();
+        RutinaEjercicio saved = repo.save(re);
+
+        LocalDate hoy = LocalDate.now();
+        if (primerEjercicio) {
+            notificacionService.crear(
+                    rutina.getCliente().getIdUsuario(),
+                    "RUTINA_ASIGNADA",
+                    "Nueva rutina asignada",
+                    "Se ha asignado tu rutina: " + rutina.getNombre(),
+                    rutina.getIdRutina(),
+                    hoy
+            );
+        } else {
+            notificacionService.crear(
+                    rutina.getCliente().getIdUsuario(),
+                    "RUTINA_ACTUALIZADA",
+                    "Rutina actualizada",
+                    "Tu rutina '" + rutina.getNombre() + "' ha sido actualizada.",
+                    rutina.getIdRutina(),
+                    hoy
+            );
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -61,14 +88,36 @@ public class RutinaEjercicioService {
         re.setSeries(dto.getSeries());
         re.setRepeticiones(dto.getRepeticiones());
         re.setDescansoSeg(dto.getDescansoSeg());
-        return toDto(repo.save(re));
+
+        RutinaEjercicio saved = repo.save(re);
+        Rutina rutina = saved.getRutina();
+        notificacionService.crear(
+                rutina.getCliente().getIdUsuario(),
+                "RUTINA_ACTUALIZADA",
+                "Rutina actualizada",
+                "Tu rutina '" + rutina.getNombre() + "' ha sido actualizada.",
+                rutina.getIdRutina(),
+                LocalDate.now()
+        );
+
+        return toDto(saved);
     }
 
     @Transactional
     public void delete(Integer id) {
-        if (!repo.existsById(id))
-            throw new ResourceNotFoundException("RutinaEjercicio no encontrado con id: " + id);
+        RutinaEjercicio re = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("RutinaEjercicio no encontrado con id: " + id));
+        Rutina rutina = re.getRutina();
         repo.deleteById(id);
+
+        notificacionService.crear(
+                rutina.getCliente().getIdUsuario(),
+                "RUTINA_ACTUALIZADA",
+                "Rutina actualizada",
+                "Tu rutina '" + rutina.getNombre() + "' ha sido actualizada.",
+                rutina.getIdRutina(),
+                LocalDate.now()
+        );
     }
 
     private RutinaEjercicioDto toDto(RutinaEjercicio re) {

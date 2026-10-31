@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import { AsistenciasService } from './asistencias.service';
+import { ConfiguracionService } from './configuracion.service';
 import { hoyIso } from './formato';
-import { leerDias } from './inactividad.config';
 import { MembresiasService } from './membresias.service';
 import { inactivos } from './resumen.mapper';
 import { Usuario } from './usuarios.models';
@@ -12,12 +12,17 @@ import { Usuario } from './usuarios.models';
 export class InactivosService {
   private readonly asistencias = inject(AsistenciasService);
   private readonly membresias = inject(MembresiasService);
+  private readonly configuracion = inject(ConfiguracionService);
 
   /** Si falla algún dato devuelve vacío: la etiqueta es un extra y no debe romper la pantalla que la usa. */
   ids(usuarios: Usuario[]): Observable<number[]> {
-    return forkJoin({ asistencias: this.asistencias.listar(), membresias: this.membresias.listar() }).pipe(
-      map(({ asistencias, membresias }) =>
-        inactivos(usuarios, membresias, asistencias, hoyIso(), leerDias()).map((f) => f.idUsuario),
+    return forkJoin({
+      asistencias: this.asistencias.listar(),
+      membresias: this.membresias.listar(),
+      dias: this.configuracion.obtenerDiasInactividad(),
+    }).pipe(
+      map(({ asistencias, membresias, dias }) =>
+        inactivos(usuarios, membresias, asistencias, hoyIso(), dias).map((f) => f.idUsuario),
       ),
       catchError(() => of<number[]>([])),
     );
