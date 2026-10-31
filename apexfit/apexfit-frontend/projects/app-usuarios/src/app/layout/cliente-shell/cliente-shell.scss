@@ -47,3 +47,25 @@
     }
   }
 }
+
+// Encabezado mínimo con la campana de notificaciones.
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: var(--af-surface);
+  border-bottom: 1px solid var(--af-border);
+}
+
+.marca {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+
+  b {
+    color: var(--af-red);
+  }
+}

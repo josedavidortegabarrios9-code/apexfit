@@ -13,3 +13,7 @@ export * from './lib/auth/session-callback';
 export * from './lib/login/login';
 export * from './lib/cuenta/cuenta.service';
 export * from './lib/cuenta/mi-cuenta';
+export * from './lib/notificaciones/notificacion.models';
+export * from './lib/notificaciones/notificacion.utils';
+export * from './lib/notificaciones/notificaciones.service';
+export * from './lib/notificaciones/campana';

@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { proveedoresBase } from '../../testing';
 import { ClienteShell } from './cliente-shell';
 
 describe('ClienteShell', () => {
   it('muestra la barra inferior con las 5 secciones del cliente', () => {
-    TestBed.configureTestingModule({ imports: [ClienteShell], providers: [provideRouter([])] });
+    TestBed.configureTestingModule({ imports: [ClienteShell], providers: [provideRouter([]), ...proveedoresBase] });
     const fixture = TestBed.createComponent(ClienteShell);
     fixture.detectChanges();
 
