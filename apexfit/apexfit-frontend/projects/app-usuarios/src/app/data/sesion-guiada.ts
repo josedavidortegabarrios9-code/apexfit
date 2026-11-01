@@ -56,6 +56,55 @@ export function terminar(s: Sesion): Sesion {
   return soloAplazados(s) ? { ...s, terminada: true } : s;
 }
 
+// ── contrato con el servidor: PUT y GET /api/v1/sesiones-entrenamiento/hoy ──
+// El servidor guarda, por cada ejercicio, completado, aplazado o pendiente; NO guarda el orden de la fila.
+
+/** La forma de la solicitud (PUT) y de la respuesta (GET) del avance de hoy. */
+export interface AvanceDto {
+  idSesion?: number;
+  fecha?: string;
+  idRutina: number;
+  terminada: boolean;
+  ejercicios: { idRutinaEjercicio: number; estado: string }[];
+}
+
+/** Lo que se envía al servidor: TODOS los ejercicios de hoy (él reemplaza la lista completa), en el orden de la rutina. */
+export function aSolicitud(rutinaId: number, ids: readonly number[], s: Sesion): AvanceDto {
+  return {
+    idRutina: rutinaId,
+    terminada: s.terminada,
+    ejercicios: ids.map((id) => ({
+      idRutinaEjercicio: id,
+      estado: s.completados.includes(id) ? 'completado' : s.aplazados.includes(id) ? 'aplazado' : 'pendiente',
+    })),
+  };
+}
+
+/**
+ * Reconstruye la sesión desde lo que guardó el servidor. Como no guarda el orden, los pendientes quedan en el orden
+ * de la rutina y los aplazados al final. Devuelve null si el avance es de otra rutina o de otros ejercicios.
+ */
+export function deRespuesta(r: AvanceDto, rutinaId: number, ids: readonly number[]): Sesion | null {
+  if (r.idRutina !== rutinaId) return null;
+  const estados = new Map(r.ejercicios.map((e) => [e.idRutinaEjercicio, e.estado]));
+  if (estados.size !== ids.length || !ids.every((id) => estados.has(id))) return null;
+  const completados = ids.filter((id) => estados.get(id) === 'completado');
+  const aplazados = ids.filter((id) => estados.get(id) === 'aplazado');
+  const nuevos = ids.filter((id) => !completados.includes(id) && !aplazados.includes(id));
+  return { rutinaId, completados, aplazados, pendientes: [...nuevos, ...aplazados], terminada: !!r.terminada };
+}
+
+/**
+ * Al abrir: el servidor manda (así se retoma en otro dispositivo), salvo que el respaldo del navegador vaya más
+ * adelantado (se avanzó sin red): entonces gana el respaldo y hay que subirlo.
+ */
+export function elegirAvance(local: Sesion | null, servidor: Sesion | null): { sesion: Sesion | null; subir: boolean } {
+  if (!local) return { sesion: servidor, subir: false };
+  if (!servidor) return { sesion: local, subir: true };
+  const progreso = (s: Sesion) => s.completados.length + (s.terminada ? 0.5 : 0);
+  return progreso(local) > progreso(servidor) ? { sesion: local, subir: true } : { sesion: servidor, subir: false };
+}
+
 // ── persistencia (localStorage; si no está disponible, la sesión sigue en memoria) ──
 
 export const claveSesion = (idUsuario: number, fecha: string): string => `apexfit.sesion.${idUsuario}.${fecha}`;

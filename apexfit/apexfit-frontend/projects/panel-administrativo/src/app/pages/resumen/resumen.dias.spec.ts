@@ -10,6 +10,7 @@ import { MembresiasService } from '../../data/membresias.service';
 import { aUsuario } from '../../data/usuarios.mapper';
 import { ID_ROL } from '../../data/usuarios.models';
 import { UsuariosService } from '../../data/usuarios.service';
+import { configuracionFalsa } from '../../testing';
 import { ResumenPagina } from './resumen';
 
 const HOY = hoyIso();
@@ -20,7 +21,7 @@ const vigente = (idUsuario: number): Membresia =>
 const asis = (id: number, idUsuario: number, fecha: string, entrada: string, salida: string | null): Asistencia =>
   ({ id, idUsuario, fecha, horaEntrada: entrada, horaSalida: salida, metodo: 'qr' });
 
-function crear(clientes: string[], asistencias: Asistencia[]) {
+function crear(clientes: string[], asistencias: Asistencia[], dias = 10) {
   TestBed.configureTestingModule({
     imports: [ResumenPagina],
     providers: [
@@ -29,6 +30,7 @@ function crear(clientes: string[], asistencias: Asistencia[]) {
       { provide: AsistenciasService, useValue: { listar: () => of(asistencias) } },
       { provide: UsuariosService, useValue: { listar: () => of({ usuarios: clientes.map((n, i) => cliente(i + 1, n)), total: clientes.length }) } },
       { provide: MembresiasService, useValue: { listar: () => of(clientes.map((_, i) => vigente(i + 1))) } },
+      configuracionFalsa(dias),
     ],
   });
   const fixture = TestBed.createComponent(ResumenPagina);
@@ -37,16 +39,13 @@ function crear(clientes: string[], asistencias: Asistencia[]) {
 }
 
 describe('Resumen: días de inactividad configurados', () => {
-  it('usa los días guardados en Inactividad (y 10 si no hay ninguno)', () => {
+  it('usa los días configurados en el servidor (y 10 por defecto)', () => {
     const asistencias = [asis(1, 1, sumarDias(HOY, -5), '08:00:00', '09:00:00')]; // Ana asistió hace 5 días
-    localStorage.clear();
     expect(crear(['Ana'], asistencias)).toContain('0Inactivos (+10 días)');
 
     TestBed.resetTestingModule();
-    localStorage.setItem('apexfit.panel.dias-inactividad', '3');
-    const t = crear(['Ana'], asistencias);
+    const t = crear(['Ana'], asistencias, 3);
     expect(t).toContain('1Inactivos (+3 días)');
     expect(t).toContain('hace 5 días');
-    localStorage.clear();
   });
 });

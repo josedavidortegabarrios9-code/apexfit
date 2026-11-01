@@ -5,6 +5,10 @@
 
 @let c = carga();
 
+@if (sinSincronizar()) {
+  <p class="sin-sincronizar" role="status">Sin conexión con el servidor: tu avance se guarda solo en este dispositivo.</p>
+}
+
 @if (c.tipo === 'cargando') {
   <p class="vacio" role="status">Cargando tu rutina…</p>
 } @else if (c.tipo === 'error') {

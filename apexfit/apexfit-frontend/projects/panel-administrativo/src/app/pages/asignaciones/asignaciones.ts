@@ -10,7 +10,6 @@ import { Carga } from '../../data/carga';
 import { ConfiguracionService } from '../../data/configuracion.service';
 import { mensajeDeError, mensajeDeGuardado } from '../../data/errores';
 import { fechaCompleta } from '../../data/formato';
-import { leerDias } from '../../data/inactividad.config';
 import { InactivosService } from '../../data/inactivos.service';
 import { Usuario } from '../../data/usuarios.models';
 import { TAMANO_PAGINA } from '../../data/usuarios.service';
@@ -49,7 +48,8 @@ export class Asignaciones {
   protected readonly busqueda = signal('');
   /** Clientes que la pantalla Inactividad marca hoy (se calcula una vez por visita, con sus mismos días). */
   protected readonly inactivos = signal<ReadonlySet<number>>(new Set());
-  protected readonly dias = signal(leerDias());
+  protected readonly dias = signal(this.configuracion.dias());
+  protected readonly avisoDias = this.configuracion.aviso;
   protected get diasInactividad(): number {
     return this.dias();
   }

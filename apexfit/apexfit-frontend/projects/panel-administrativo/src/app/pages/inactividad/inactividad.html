@@ -11,6 +11,12 @@
            [value]="dias()" (change)="cambiarDias(d)" />
   </label>
   <small class="af-muted">Entre {{ minDias }} y {{ maxDias }} días. Solo cuentan los clientes activos con membresía vigente.</small>
+  @if (errorGuardado(); as e) {
+    <small class="nota-aviso" role="alert">{{ e }}</small>
+  }
+  @if (avisoDias(); as a) {
+    <small class="nota-aviso" role="status">{{ a }}</small>
+  }
 </section>
 
 @if (c.tipo === 'cargando') {

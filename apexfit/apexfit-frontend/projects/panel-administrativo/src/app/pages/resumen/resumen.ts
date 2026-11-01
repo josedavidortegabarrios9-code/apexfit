@@ -11,7 +11,6 @@ import { DashboardService } from '../../data/dashboard.service';
 import { DashboardResumenDto } from '../../data/dtos';
 import { mensajeDeError } from '../../data/errores';
 import { fechaCompleta, hoyIso, fechaCorta } from '../../data/formato';
-import { leerDias } from '../../data/inactividad.config';
 import { Membresia } from '../../data/membresias.models';
 import { MembresiasService } from '../../data/membresias.service';
 import {
@@ -53,7 +52,8 @@ export class ResumenPagina {
   protected readonly fecha = fechaCompleta;
   protected readonly corta = fechaCorta;
   protected readonly maxFilas = MAX_FILAS;
-  protected readonly dias = signal(leerDias());
+  protected readonly dias = signal(this.configuracion.dias());
+  protected readonly avisoDias = this.configuracion.aviso;
   /** Los días que el administrador configuró en la pantalla Inactividad (10 si no ha cambiado nada). */
   protected get diasInactividad(): number {
     return this.dias();

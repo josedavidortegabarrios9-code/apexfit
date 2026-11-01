@@ -1,7 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { EnvironmentProviders, Provider } from '@angular/core';
+import { EnvironmentProviders, Provider, signal } from '@angular/core';
+import { Observable, of } from 'rxjs';
 import { ALLOWED_ROLES, API_URL, ExternalNavigator, LOGIN_URL, Rol } from 'shared';
+import { ConfiguracionService } from './data/configuracion.service';
 
 /** JWT falso (sin firma real) que vence dentro de `expiresIn` segundos. Solo para pruebas. */
 export function fakeJwt(expiresIn = 3600): string {
@@ -27,4 +29,17 @@ export function proveedoresPanel(irA: (url: string) => void = () => undefined): 
     { provide: LOGIN_URL, useValue: URL_LOGIN },
     { provide: ExternalNavigator, useValue: { go: irA } },
   ];
+}
+
+/** Los días de inactividad sin tocar el servidor: para las pantallas que se prueban con servicios falsos. */
+export function configuracionFalsa(dias = 10, guardar: (d: number) => Observable<number> = (d) => of(d)): Provider {
+  return {
+    provide: ConfiguracionService,
+    useValue: {
+      dias: signal(dias),
+      aviso: signal<string | null>(null),
+      obtenerDiasInactividad: () => of(dias),
+      guardarDiasInactividad: guardar,
+    },
+  };
 }
