@@ -14,7 +14,8 @@ let siguiente = 0;
   styleUrl: './campana.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.lateral]': 'modo() === "lateral"',
+    // No se llama «lateral» a propósito: el menú del panel ya usa esa clase y sus estilos se aplicaban a la campana.
+    '[class.en-menu]': 'modo() === "lateral"',
     '(document:keydown.escape)': 'cerrar(true)',
     '(document:click)': 'alPulsarEnLaPagina($event)',
   },

@@ -48,7 +48,7 @@
 }
 
 @media (min-width: 900px) {
-  :host(:not(.lateral)) .panel {
+  :host(:not(.en-menu)) .panel {
     left: auto;
     right: 12px;
     top: calc(100% + 6px);
@@ -58,7 +58,7 @@
 }
 
 // Dentro del menú lateral del panel (solo pantallas anchas): se abre a su derecha.
-:host(.lateral) .panel {
+:host(.en-menu) .panel {
   position: fixed;
   top: 12px;
   left: 252px;
