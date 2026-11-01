@@ -1,19 +1,23 @@
 <div class="panel">
   <header class="barra">
     <div class="logo" aria-label="ApexFit">APEX<b>FIT</b></div>
-    <button
-      class="hamburguesa"
-      type="button"
-      aria-controls="menu-principal"
-      [attr.aria-expanded]="menuAbierto()"
-      (click)="alternarMenu()"
-    >
-      {{ menuAbierto() ? 'Cerrar menú' : 'Menú' }}
-    </button>
+    <div class="acciones-barra">
+      <lib-campana />
+      <button
+        class="hamburguesa"
+        type="button"
+        aria-controls="menu-principal"
+        [attr.aria-expanded]="menuAbierto()"
+        (click)="alternarMenu()"
+      >
+        {{ menuAbierto() ? 'Cerrar menú' : 'Menú' }}
+      </button>
+    </div>
   </header>
 
   <aside class="lateral" id="menu-principal" [class.abierto]="menuAbierto()">
     <div class="logo logo-lateral" aria-hidden="true">APEX<b>FIT</b></div>
+    <lib-campana class="campana-lateral" modo="lateral" />
     <p class="rol">{{ rolEtiqueta() }}</p>
 
     <nav aria-label="Principal">

@@ -4,6 +4,10 @@
   <h1 class="titulo">Mis clientes</h1>
 </header>
 
+@if (avisoDias(); as a) {
+  <p class="nota-aviso" role="status">{{ a }}</p>
+}
+
 @if (c.tipo === 'cargando') {
   <p class="vacio" role="status">Cargando tus clientes…</p>
 } @else if (c.tipo === 'error') {
@@ -96,6 +100,7 @@
             </div>
           } @else if (at.datos.length === 0) {
             <p class="vacio">Este cliente todavía no tiene asistencias registradas.</p>
+            <p class="nota-aviso" role="status">Inactivo: nunca ha asistido.</p>
           } @else {
             @let r = resumen(at.datos);
             <p class="af-muted" role="status">
@@ -104,6 +109,9 @@
                 · Última: {{ fecha(r.ultima) }}
               }
             </p>
+            @if (inactivo(r.ultima)) {
+              <p class="nota-aviso" role="status">Inactivo: lleva más de {{ dias() }} días sin asistir.</p>
+            }
             <table class="progreso">
               <thead>
                 <tr><th scope="col">Fecha</th><th scope="col">Entrada</th><th scope="col">Salida</th><th scope="col">Método</th></tr>

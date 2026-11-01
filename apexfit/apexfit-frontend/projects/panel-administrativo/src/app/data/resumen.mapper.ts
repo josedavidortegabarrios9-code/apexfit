@@ -41,6 +41,9 @@ export function porVencer(usuarios: Usuario[], membresias: Membresia[], hoy: str
   return filas.sort((a, b) => a.diasRestantes - b.diasRestantes);
 }
 
+/** La regla de inactividad: nunca ha asistido (null) o lleva más de `limite` días. La usan Inactividad, Resumen y Mis clientes. */
+export const estaInactivo = (dias: number | null, limite: number): boolean => dias === null || dias > limite;
+
 /** Clientes con membresía vigente que no asisten hace más de `limite` días (o que nunca han asistido). */
 export function inactivos(
   usuarios: Usuario[],
@@ -56,7 +59,7 @@ export function inactivos(
     if (mejor?.estado !== 'activa' && mejor?.estado !== 'por-vencer') continue;
     const ultima = ultimas.get(u.id) ?? null;
     const dias = ultima ? diasEntre(ultima, hoy) : null;
-    if (dias === null || dias > limite) filas.push({ idUsuario: u.id, nombre: u.nombreCompleto, ultima, dias });
+    if (estaInactivo(dias, limite)) filas.push({ idUsuario: u.id, nombre: u.nombreCompleto, ultima, dias });
   }
   // primero los que nunca han venido, luego los que llevan más días
   return filas.sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));

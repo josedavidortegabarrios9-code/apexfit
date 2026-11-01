@@ -8,6 +8,10 @@
   </div>
 </header>
 
+@if (avisoDias(); as d) {
+  <p class="nota-aviso" role="status">{{ d }}</p>
+}
+
 @if (aviso(); as a) {
   <p [class]="a.tipo === 'ok' ? 'aviso ok' : 'aviso error'" [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'">
     {{ a.texto }}

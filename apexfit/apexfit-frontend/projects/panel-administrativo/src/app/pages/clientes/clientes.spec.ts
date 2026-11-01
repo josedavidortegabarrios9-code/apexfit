@@ -5,6 +5,7 @@ import { Subject, of, throwError } from 'rxjs';
 import { ClienteAsignado } from '../../data/clientes.models';
 import { ClientesService } from '../../data/clientes.service';
 import { Clientes } from './clientes';
+import { configuracionFalsa } from '../../testing';
 
 const lista = (): ClienteAsignado[] => [
   {
@@ -21,7 +22,7 @@ function crear(misClientes: () => unknown = () => of(lista())) {
   const servicio = { misClientes: vi.fn(misClientes) };
   TestBed.configureTestingModule({
     imports: [Clientes],
-    providers: [provideRouter([]), { provide: ClientesService, useValue: servicio }],
+    providers: [provideRouter([]), { provide: ClientesService, useValue: servicio }, configuracionFalsa()],
   });
   const fixture = TestBed.createComponent(Clientes);
   fixture.detectChanges();

@@ -11,6 +11,7 @@ import { aUsuario } from '../../data/usuarios.mapper';
 import { ID_ROL } from '../../data/usuarios.models';
 import { UsuariosService } from '../../data/usuarios.service';
 import { aforoPorHora } from '../../data/resumen.mapper';
+import { configuracionFalsa } from '../../testing';
 import { ResumenPagina } from './resumen';
 
 const HOY = hoyIso();
@@ -30,6 +31,7 @@ function crear(clientes: string[], asistencias: Asistencia[]) {
       { provide: AsistenciasService, useValue: { listar: () => of(asistencias) } },
       { provide: UsuariosService, useValue: { listar: () => of({ usuarios: clientes.map((n, i) => cliente(i + 1, n)), total: clientes.length }) } },
       { provide: MembresiasService, useValue: { listar: () => of(clientes.map((_, i) => vigente(i + 1))) } },
+      configuracionFalsa(),
     ],
   });
   const fixture = TestBed.createComponent(ResumenPagina);

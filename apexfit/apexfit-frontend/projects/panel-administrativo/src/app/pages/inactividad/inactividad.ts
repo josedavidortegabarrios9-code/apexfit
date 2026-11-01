@@ -7,7 +7,7 @@ import { Carga } from '../../data/carga';
 import { ConfiguracionService } from '../../data/configuracion.service';
 import { mensajeDeError } from '../../data/errores';
 import { fechaCompleta, hoyIso } from '../../data/formato';
-import { guardarDias, leerDias, MAX_DIAS, MIN_DIAS, normalizarDias } from '../../data/inactividad.config';
+import { MAX_DIAS, MIN_DIAS, normalizarDias } from '../../data/inactividad.config';
 import { Membresia } from '../../data/membresias.models';
 import { MembresiasService } from '../../data/membresias.service';
 import { inactivos } from '../../data/resumen.mapper';
@@ -37,7 +37,9 @@ export class InactividadPagina {
   protected readonly fecha = fechaCompleta;
   protected readonly minDias = MIN_DIAS;
   protected readonly maxDias = MAX_DIAS;
-  protected readonly dias = signal(leerDias());
+  protected readonly dias = signal(this.configuracion.dias());
+  protected readonly avisoDias = this.configuracion.aviso;
+  protected readonly errorGuardado = signal<string | null>(null);
   protected readonly carga = signal<Carga<Datos>>({ tipo: 'cargando' });
 
   /** Clientes activos con membresía vigente que llevan más de `dias` sin asistir (o que nunca han asistido). */
@@ -77,8 +79,20 @@ export class InactividadPagina {
   protected cambiarDias(campo: HTMLInputElement): void {
     const dias = normalizarDias(campo.value);
     campo.value = String(dias); // si escribió algo inválido, el campo vuelve al valor aceptado
+    const anterior = this.dias();
     this.dias.set(dias);
-    guardarDias(dias);
-    this.configuracion.guardarDiasInactividad(dias).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.errorGuardado.set(null);
+    this.configuracion
+      .guardarDiasInactividad(dias)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (guardado) => this.dias.set(guardado),
+        error: () => {
+          // El servidor no lo guardó: la pantalla vuelve al valor que sí está vigente.
+          this.dias.set(anterior);
+          campo.value = String(anterior);
+          this.errorGuardado.set(`No se pudo guardar en el servidor. Se mantienen ${anterior} días.`);
+        },
+      });
   }
 }

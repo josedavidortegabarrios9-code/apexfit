@@ -6,6 +6,10 @@
   <p class="af-muted">Hoy · {{ fecha(hoy) }}</p>
 </header>
 
+@if (avisoDias(); as a) {
+  <p class="nota-aviso" role="status">{{ a }}</p>
+}
+
 @if (c.tipo === 'cargando') {
   <p class="vacio" role="status">Cargando el resumen…</p>
 } @else if (c.tipo === 'error') {

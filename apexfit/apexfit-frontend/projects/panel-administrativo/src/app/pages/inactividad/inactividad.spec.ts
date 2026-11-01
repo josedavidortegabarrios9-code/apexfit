@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { Asistencia } from '../../data/asistencias.models';
 import { AsistenciasService } from '../../data/asistencias.service';
 import { hoyIso, sumarDias } from '../../data/formato';
@@ -9,6 +9,7 @@ import { MembresiasService } from '../../data/membresias.service';
 import { aUsuario } from '../../data/usuarios.mapper';
 import { ID_ROL } from '../../data/usuarios.models';
 import { UsuariosService } from '../../data/usuarios.service';
+import { configuracionFalsa } from '../../testing';
 import { InactividadPagina } from './inactividad';
 
 const cliente = (id: number, nombre: string) =>
@@ -18,14 +19,14 @@ const vigente = (idUsuario: number): Membresia =>
 const visita = (idUsuario: number, hace: number): Asistencia =>
   ({ id: idUsuario, idUsuario, fecha: sumarDias(hoyIso(), -hace), horaEntrada: '08:00:00', horaSalida: null, metodo: 'qr' });
 
-function crear() {
-  localStorage.clear();
+function crear(guardar: (d: number) => Observable<number> = (d) => of(d)) {
   TestBed.configureTestingModule({
     imports: [InactividadPagina],
     providers: [
       { provide: AsistenciasService, useValue: { listar: () => of([visita(1, 15), visita(2, 4)]) } },
       { provide: UsuariosService, useValue: { listar: () => of({ usuarios: [cliente(1, 'Ana'), cliente(2, 'Beto'), cliente(3, 'Carla')], total: 3 }) } },
       { provide: MembresiasService, useValue: { listar: () => of([vigente(1), vigente(2), vigente(3)]) } },
+      configuracionFalsa(10, guardar),
     ],
   });
   const fixture = TestBed.createComponent(InactividadPagina);
@@ -55,6 +56,26 @@ describe('Inactividad (pantalla)', () => {
     t = texto(f);
     expect(t).toContain('3 clientes inactivos (más de 3 días');
     expect(t).toContain('Beto');
-    expect(localStorage.getItem('apexfit.panel.dias-inactividad')).toBe('3');
+  });
+
+  it('el cambio se guarda en el servidor (PUT), no en el navegador', () => {
+    const guardar = vi.fn((d: number) => of(d));
+    const f = crear(guardar);
+    const campo = (f.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    campo.value = '3';
+    campo.dispatchEvent(new Event('change'));
+    expect(guardar).toHaveBeenCalledWith(3);
+    expect(localStorage.getItem('apexfit.panel.dias-inactividad')).toBeNull();
+  });
+
+  it('si el servidor no lo guarda, vuelve al valor anterior y lo avisa', () => {
+    const f = crear(() => throwError(() => new Error('403')));
+    const campo = (f.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    campo.value = '3';
+    campo.dispatchEvent(new Event('change'));
+    f.detectChanges();
+    expect(campo.value).toBe('10');
+    expect(texto(f)).toContain('No se pudo guardar en el servidor. Se mantienen 10 días.');
+    expect(texto(f)).toContain('2 clientes inactivos (más de 10 días');
   });
 });

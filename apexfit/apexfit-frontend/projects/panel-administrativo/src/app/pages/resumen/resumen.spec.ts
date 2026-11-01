@@ -14,6 +14,7 @@ import { aUsuario } from '../../data/usuarios.mapper';
 import { ID_ROL, Usuario } from '../../data/usuarios.models';
 import { UsuariosService } from '../../data/usuarios.service';
 import { ResumenPagina } from './resumen';
+import { configuracionFalsa } from '../../testing';
 
 const HOY = hoyIso();
 const en = (d: number) => sumarDias(HOY, d);
@@ -56,6 +57,7 @@ function crear(f: Fuentes = {}) {
       { provide: AsistenciasService, useValue: { listar: servicios.asistencias } },
       { provide: UsuariosService, useValue: { listar: () => of({ usuarios, total: 4 }) } },
       { provide: MembresiasService, useValue: { listar: () => of(membresias) } },
+      configuracionFalsa(),
     ],
   });
   const fixture = TestBed.createComponent(ResumenPagina);

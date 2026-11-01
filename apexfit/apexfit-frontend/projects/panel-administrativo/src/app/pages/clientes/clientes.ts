@@ -7,7 +7,9 @@ import { resumirAsistencia } from '../../data/clientes.mapper';
 import { ClientesService } from '../../data/clientes.service';
 import { Carga } from '../../data/carga';
 import { mensajeDeError } from '../../data/errores';
-import { fechaCompleta, fechaCorta, horaCorta, hoyIso, numero } from '../../data/formato';
+import { diasEntre, fechaCompleta, fechaCorta, horaCorta, hoyIso, numero } from '../../data/formato';
+import { ConfiguracionService } from '../../data/configuracion.service';
+import { estaInactivo } from '../../data/resumen.mapper';
 
 interface Vista {
   c: ClienteAsignado;
@@ -43,6 +45,7 @@ function armarVista(c: ClienteAsignado): Vista {
 })
 export class Clientes {
   private readonly clientes = inject(ClientesService);
+  private readonly configuracion = inject(ConfiguracionService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly carga = signal<Carga<ClienteAsignado[]>>({ tipo: 'cargando' });
@@ -53,6 +56,11 @@ export class Clientes {
   protected readonly hora = horaCorta;
   protected readonly resumen = (lista: Asistencia[]) => resumirAsistencia(lista, hoyIso());
   protected readonly numero = numero;
+  /** Los días de inactividad que el administrador configuró (el entrenador solo los ve). */
+  protected readonly dias = this.configuracion.dias;
+  protected readonly avisoDias = this.configuracion.aviso;
+  /** La misma regla de la pantalla Inactividad, con la última asistencia de este cliente (no revisa la membresía: el entrenador no puede verla). */
+  protected readonly inactivo = (ultima: string | null): boolean => estaInactivo(ultima ? diasEntre(ultima, hoyIso()) : null, this.dias());
 
   protected readonly vistas = computed<Vista[]>(() => {
     const c = this.carga();
@@ -61,6 +69,7 @@ export class Clientes {
 
   constructor() {
     this.cargar();
+    this.configuracion.obtenerDiasInactividad().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   protected cargar(): void {

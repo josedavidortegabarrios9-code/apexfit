@@ -190,3 +190,21 @@ nav {
     margin-top: auto;
   }
 }
+
+// Campana de notificaciones: en la barra (celular) o en el menú lateral (pantallas anchas).
+.acciones-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campana-lateral {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .campana-lateral {
+    display: block;
+    margin-bottom: 8px;
+  }
+}
