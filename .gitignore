@@ -3,3 +3,7 @@
 .postman/
 postman/
 run_postman_tests.ps1
+
+# Carpetas de desarrollo y demos paralelas
+apexfit-demo/
+apexfit/node_modules/

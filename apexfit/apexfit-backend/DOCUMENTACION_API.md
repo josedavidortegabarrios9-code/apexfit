@@ -257,7 +257,7 @@ Módulo de asistencia inteligente impulsado por el modelo **Google Gemini 3.5 Fl
 #### Esquema de Respuesta (`ChatResponseDto`):
 ```json
 {
-  "response": "¡Hola, USER DEMO! Tu membresía del Plan Trimestral se encuentra Activa y te quedan 73 días restantes (vence el 14 de enero de 2027)."
+  "response": "¡Hola, Juan! Tu membresía del Plan Trimestral se encuentra Activa y te quedan 73 días restantes (vence el 14 de enero de 2027)."
 }
 ```
 

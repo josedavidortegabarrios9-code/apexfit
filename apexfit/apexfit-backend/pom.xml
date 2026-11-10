@@ -12,7 +12,7 @@
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ApexFit</name>
-	<description>Demo project for Spring Boot</description>
+	<description>ApexFit Gym Management Backend API</description>
 	<url/>
 	<licenses>
 		<license/>
