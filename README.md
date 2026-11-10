@@ -123,7 +123,6 @@ $env:RDS_DB_NAME="apexfit"
 $env:RDS_USERNAME="admin"
 $env:RDS_PASSWORD="TuPasswordSeguro"
 $env:JWT_SECRET="ClaveSecretaDeAlMenos32BytesApexFitProdKey"
-$env:GEMINI_API_KEY="tu_api_key_de_gemini"
 ./mvnw spring-boot:run
 ```
 
