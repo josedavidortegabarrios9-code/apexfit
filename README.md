@@ -95,11 +95,13 @@ cd apexfit/apexfit-backend
 **Modo Producción (AWS RDS):**
 ```powershell
 $env:APP_PROFILE="prod"
-$env:RDS_HOSTNAME="tu-instancia.rds.amazonaws.com"
+$env:RDS_HOSTNAME="apexfit-mysql.cxxxxxx.us-east-1.rds.amazonaws.com"
 $env:RDS_PORT="3306"
 $env:RDS_DB_NAME="apexfit"
 $env:RDS_USERNAME="admin"
-$env:RDS_PASSWORD="tu_password"
+$env:RDS_PASSWORD="TuPasswordSeguro"
+$env:JWT_SECRET="ClaveSecretaDeAlMenos32BytesApexFitProdKey"
+$env:GEMINI_API_KEY="tu_api_key_de_gemini"
 ./mvnw spring-boot:run
 ```
 
