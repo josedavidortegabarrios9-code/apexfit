@@ -1,7 +1,7 @@
 # 🏋️ ApexFit API — Documentación de la API REST
 
 > **Entrega 3 (Semana 8) — Control de Acceso Basado en Roles (RBAC), Autenticación JWT y Tests Automatizados**  
-> **Tecnologías:** Spring Boot · Spring Security · JWT (io.jsonwebtoken) · MySQL (AWS RDS / Local) · Postman / Newman
+> **Tecnologías:** Spring Boot · Spring Security · JWT (io.jsonwebtoken) · Google Gemini AI · MySQL (AWS RDS / Local) · Postman / Newman
 
 ---
 
@@ -13,6 +13,23 @@ La API REST de **ApexFit** proporciona servicios completos para la gestión de u
 - **Ambiente Local:** `http://localhost:8080/api/v1`
 - **Ambiente AWS Cloud:** `http://<ec2-ip-o-dominio>:8080/api/v1`
 
+### Variables de Entorno del Backend
+| Variable | Obligatoria | Descripción | Valor por Defecto |
+|---|---|---|---|
+| `APP_PROFILE` | No | Perfil activo de Spring Boot (`dev` o `prod`) | `dev` |
+| `DB_HOST` | No (dev) | Host de MySQL local | `localhost` |
+| `DB_PORT` | No (dev) | Puerto de MySQL local | `3306` |
+| `DB_NAME` | No (dev) | Base de datos | `apexfit` |
+| `DB_USER` | No (dev) | Usuario de MySQL | `root` |
+| `DB_PASS` | No (dev) | Contraseña de MySQL | `root` |
+| `RDS_HOSTNAME` | Sí (prod) | Endpoint de AWS RDS | - |
+| `RDS_PORT` | No (prod) | Puerto de AWS RDS | `3306` |
+| `RDS_DB_NAME` | Sí (prod) | Nombre de la base de datos | `apexfit` |
+| `RDS_USERNAME` | Sí (prod) | Usuario administrador de RDS | - |
+| `RDS_PASSWORD` | Sí (prod) | Contraseña de RDS | - |
+| `JWT_SECRET` | No | Clave de firma JWT (mínimo 32 caracteres) | `ApexFitSecretKeyMustBeAtLeast...` |
+| `GEMINI_API_KEY` | **Recomendada** | API Key de Google Gemini (Google AI Studio) para el Asistente Virtual | Vacía (responde mensaje informativo si no se define) |
+
 ---
 
 ## 🔐 2. Modelo de Seguridad y Roles (RBAC)
@@ -20,7 +37,7 @@ La API REST de **ApexFit** proporciona servicios completos para la gestión de u
 El sistema soporta 3 roles de usuario:
 1. `ROLE_ADMINISTRADOR`: Control total de usuarios, membresías, auditoría de asistencias y asignaciones.
 2. `ROLE_ENTRENADOR`: Gestión de ejercicios, creación de rutinas deportivas, emisión de alertas y seguimiento a clientes asignados.
-3. `ROLE_CLIENTE`: Acceso a sus rutinas, registro de asistencia (código QR), registro de métricas de progreso físico y buzón de alertas.
+3. `ROLE_CLIENTE`: Acceso a sus rutinas, registro de asistencia (código QR), registro de métricas de progreso físico, consulta de su entrenador asignado y asistente virtual con IA.
 
 ### Autenticación Bearer Token
 Todas las peticiones a endpoints protegidos deben incluir la cabecera:
@@ -161,16 +178,18 @@ Content-Type: application/json
 
 | Método | Endpoint | Roles Permitidos | Descripción |
 |---|---|---|---|
-| `GET` | `/api/v1/asistencias` | `ADMINISTRADOR` | Auditoría de asistencias del gimnasio |
-| `GET` | `/api/v1/asistencias/{id}` | `CLIENTE`, `ADMINISTRADOR` | Detalle de un registro de ingreso |
-| `GET` | `/api/v1/asistencias/usuario/{idUsuario}` | `CLIENTE`, `ADMINISTRADOR` | Historial de asistencias de un cliente |
-| `POST` | `/api/v1/asistencias` | `CLIENTE`, `ADMINISTRADOR` | Marcar asistencia (código QR / entrada) |
+| `GET` | `/api/v1/asistencias` | `ADMINISTRADOR`, `ENTRENADOR` | Auditoría de asistencias del gimnasio |
+| `GET` | `/api/v1/asistencias/{id}` | `CLIENTE`, `ENTRENADOR`, `ADMINISTRADOR` | Detalle de un registro de ingreso |
+| `GET` | `/api/v1/asistencias/usuario/{idUsuario}` | `CLIENTE`, `ENTRENADOR`, `ADMINISTRADOR` | Historial de asistencias de un cliente |
+| `POST` | `/api/v1/asistencias` | `CLIENTE`, `ADMINISTRADOR` | Marcar asistencia manual |
+| `POST` | `/api/v1/asistencias/escanear-qr` | `CLIENTE`, `ENTRENADOR`, `ADMINISTRADOR` | **Registro toggle inteligente por QR:** 1er escaneo del día = registra Entrada (`horaEntrada`), 2do escaneo = registra Salida (`horaSalida`) en la misma asistencia |
+| `PATCH` | `/api/v1/asistencias/{id}/salida` | `CLIENTE`, `ADMINISTRADOR` | Registrar hora de salida en una asistencia abierta |
 | `PUT` | `/api/v1/asistencias/{id}` | `ADMINISTRADOR` | Modificar asistencia |
 | `DELETE` | `/api/v1/asistencias/{id}` | `ADMINISTRADOR` | Eliminar asistencia |
 
 ---
 
-### 🔔 3.10. Alertas y Notificaciones (`/api/v1/alertas`)
+### 🔔 3.10. Alertas del Sistema (`/api/v1/alertas`)
 
 | Método | Endpoint | Roles Permitidos | Descripción |
 |---|---|---|---|
@@ -212,56 +231,57 @@ Módulo de seguimiento del avance diario de entrenamiento. Permite al cliente re
 - **Validación de pertenencia:** Un `idRutinaEjercicio` que no pertenezca a la rutina indicada genera error `400 Bad Request`. Si la rutina no pertenece al cliente autenticado, se retorna `403 Forbidden`.
 - **Historial con RBAC:** Un `CLIENTE` solo puede consultar su propio historial. Un `ENTRENADOR` solo puede ver el de sus clientes asignados (vía `entrenador_cliente`). El `ADMINISTRADOR` puede consultar cualquiera.
 
-#### Ejemplo — PUT `/api/v1/sesiones-entrenamiento/hoy` (Guardar avance):
+---
+
+### 🤖 3.13. Asistente Virtual con IA (`/api/v1/chat`)
+
+Módulo de asistencia inteligente impulsado por el modelo **Google Gemini 3.5 Flash Lite** de Google DeepMind. Inyecta automáticamente los datos reales del usuario autenticado (nombre, correo, rol, plan de membresía, fecha de vencimiento y días restantes calculados) dentro de la conversación para responder con precisión y sin requerir preguntas de identificación.
+
+| Método | Endpoint | Roles Permitidos | Descripción |
+|---|---|---|---|
+| `POST` | `/api/v1/chat` | `CLIENTE`, `ENTRENADOR`, `ADMINISTRADOR` | Enviar mensaje al asistente virtual y recibir respuesta contextualizada |
+
+#### Esquema de Petición (`ChatRequestDto`):
 ```json
-// Request
 {
-  "idRutina": 5,
-  "terminada": false,
-  "ejercicios": [
-    { "idRutinaEjercicio": 12, "estado": "completado" },
-    { "idRutinaEjercicio": 13, "estado": "aplazado" },
-    { "idRutinaEjercicio": 14, "estado": "pendiente" }
+  "message": "¿Cuántos días le quedan a mi membresía?",
+  "history": [
+    {
+      "role": "assistant",
+      "content": "¡Hola! Soy tu asistente virtual de ApexFit. ¿En qué te puedo ayudar hoy?"
+    }
   ]
 }
 ```
 
-**Respuesta exitosa (`200 OK`):**
+#### Esquema de Respuesta (`ChatResponseDto`):
 ```json
 {
-  "idSesion": 1,
-  "fecha": "2026-10-22",
-  "idRutina": 5,
-  "terminada": false,
-  "ejercicios": [
-    { "idRutinaEjercicio": 12, "estado": "completado" },
-    { "idRutinaEjercicio": 13, "estado": "aplazado" },
-    { "idRutinaEjercicio": 14, "estado": "pendiente" }
-  ]
+  "response": "¡Hola, USER DEMO! Tu membresía del Plan Trimestral se encuentra Activa y te quedan 73 días restantes (vence el 14 de enero de 2027)."
 }
 ```
 
-#### Ejemplo — GET `/api/v1/sesiones-entrenamiento/usuario/9?desde=2026-10-01&hasta=2026-10-22` (Historial):
-**Respuesta exitosa (`200 OK`):**
+---
+
+### 🧑‍🏫 3.14. Consulta de Mi Entrenador (`/api/v1/mi-entrenador`)
+
+Permite al cliente autenticado consultar de forma directa el perfil y datos de contacto de su preparador físico activo.
+
+| Método | Endpoint | Roles Permitidos | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/mi-entrenador` | `CLIENTE`, `ADMINISTRADOR` | Retorna los datos de contacto del entrenador asignado (`EntrenadorInfoDto`). Si no tiene asignación, responde con `204 No Content` |
+
+#### Esquema de Respuesta (`200 OK`):
 ```json
-[
-  {
-    "fecha": "2026-10-22",
-    "idRutina": 5,
-    "terminada": false,
-    "completados": 1,
-    "aplazados": 1,
-    "total": 3
-  },
-  {
-    "fecha": "2026-10-21",
-    "idRutina": 5,
-    "terminada": true,
-    "completados": 3,
-    "aplazados": 0,
-    "total": 3
-  }
-]
+{
+  "idEntrenador": 4,
+  "nombre": "Carlos",
+  "apellido": "Pérez",
+  "correo": "entrenador@apexfit.test",
+  "telefono": "+57 300 123 4567",
+  "estado": "activa",
+  "fechaAsignacion": "2026-10-15T09:00:00"
+}
 ```
 
 ---

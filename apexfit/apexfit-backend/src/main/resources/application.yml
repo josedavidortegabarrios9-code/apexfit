@@ -12,6 +12,10 @@ spring:
 springdoc:
   override-with-generic-response: false
 
+# Integración con Google Gemini AI para el asistente virtual
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:${ANTHROPIC_API_KEY:}}
 
 logging:
   level:
