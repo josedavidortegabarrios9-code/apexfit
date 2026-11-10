@@ -1,64 +1,53 @@
-# Shared
+# 📦 ApexFit — Librería Shared (`projects/shared`)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
+Librería interna de utilidades, componentes compartidos, seguridad y diseño visual común para las aplicaciones `app-usuarios` y `panel-administrativo` del monorepositorio **ApexFit**.
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 🧩 Contenido y Módulos Exportados
 
-```bash
-ng generate component component-name
-```
+### 1. 🔐 Seguridad y Autenticación (`lib/auth/`)
+- **`AuthService`:** Manejo centralizado del estado de sesión con Signals de Angular, almacenamiento del token JWT y decodificación de roles.
+- **`AuthInterceptor`:** Interceptor HTTP funcional que inyecta automáticamente la cabecera `Authorization: Bearer <token>` en todas las peticiones a la API.
+- **Guards de Enrutamiento:**
+  - `accessGuard`: Protege rutas privadas requiriendo sesión activa.
+  - `guestGuard`: Redirige usuarios ya autenticados lejos de páginas públicas como login o registro.
+  - `roleGuard`: Restringe rutas a roles autorizados (`ROLE_CLIENTE`, `ROLE_ENTRENADOR`, `ROLE_ADMINISTRADOR`).
+- **Transferencia de Sesión (`session-transfer.ts`):** Mecanismo de handoff mediante token efímero para transferir la sesión entre `app-usuarios` (puerto 4200) y `panel-administrativo` (puerto 4201).
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### 2. 🤖 Asistente Virtual Inteligente (`lib/chat/`)
+- **`ChatBotComponent` (`<lib-chatbot />`):** Componente flotante interactivo (FAB) con panel modal de conversación.
+- **`ChatService`:** Servicio reactivo que gestiona el historial de mensajes, indicador de escritura ("pensando...") y comunicación con el backend (`POST /api/v1/chat`).
+- **`chat.models.ts`:** DTOs e interfaces de mensajes, peticiones y respuestas estructuradas.
 
-```bash
-ng generate --help
-```
+### 3. 🔔 Campana de Notificaciones (`lib/notificaciones/`)
+- **`Campana` (`<lib-campana />`):** Menú desplegable con conteo de notificaciones sin leer, listado por tipo, marcado de lectura y navegación directa.
+- **`NotificacionesService`:** Consulta reactiva y sincronización periódica con el backend.
 
-## Building
+### 4. 👤 Perfil y Cuenta (`lib/cuenta/`)
+- **`MiCuenta` (`<lib-mi-cuenta />`):** Vista de gestión de datos personales y actualización de contraseña.
+- **`CuentaService`:** Consumo de endpoints de perfil y cambio de credenciales.
 
-To build the library, run:
+### 5. 🎨 Sistema de Diseño y Tema (`styles/_theme.scss`)
+- Variables CSS globales de color, tipografía, bordes y radios (`--af-red`, `--af-surface`, `--af-border`, etc.).
+- Clases utilitarias (`.af-btn`, `.af-card`, `.af-tag`, `.field-error`).
 
-```bash
-ng build shared
-```
+---
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+## 🧪 Pruebas Unitarias
 
-### Publishing the Library
-
-Once the project is built, you can publish your library by following these steps:
-
-1. Navigate to the `dist` directory:
-
-   ```bash
-   cd dist/shared
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Para ejecutar las pruebas automatizadas de la librería con Vitest:
 
 ```bash
-ng test
+npx ng test shared --watch=false
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## 🛠️ Compilación
 
 ```bash
-ng e2e
+npx ng build shared
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+El artefacto compilado se genera en `dist/shared`.
